@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2448a8">
+<title>My English Practice - Theme 1</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f5fc;color:#192747;font-family:Arial,sans-serif}
+header{background:linear-gradient(135deg,#18336d,#4268d8);color:white;text-align:center;padding:23px 12px;border-bottom:5px solid #ffd166}
+header h1{font-size:27px;margin:4px}
+header p{margin:6px;font-size:14px}
+nav{position:sticky;top:0;background:white;padding:9px;display:flex;gap:8px;z-index:5;box-shadow:0 3px 10px #0001}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+nav button{flex:1;border:2px solid #dce4f2;border-radius:12px;padding:13px 5px;font-weight:bold;background:#f6f8ff;color:#18336d}
+nav button.active{background:#ffd166;border-color:#ffd166}
+main{max-width:760px;margin:auto;padding:14px}
+section{display:none}
+section.active{display:block}
+.intro,.sentence,.gameinfo{background:white;border:1px solid #dce4f2;border-radius:16px;padding:15px;margin-bottom:11px}
+.intro h2{margin:0 0 7px;font-size:23px;color:#2448a8}
+.intro p{margin:0;line-height:1.5;color:#65718a}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}
+.action{padding:13px 7px;border:0;border-radius:12px;font-weight:bold;min-height:47px}
+.blue{background:#315bd6;color:white}
+.yellow{background:#ffd166;color:#192747}
+.white{background:white;color:#192747;border:1px solid #dce4f2}
+.sentence{display:flex;align-items:center;gap:9px;padding:13px}
+.words{flex:1;min-width:0}
+.en{font-size:18px;line-height:1.4;font-weight:bold;color:#2448a8;overflow-wrap:anywhere}
+.tr{font-size:15px;color:#b03752;margin-top:6px;line-height:1.4}
+.num{display:inline-grid;place-items:center;background:#edf2ff;color:#315bd6;width:27px;height:27px;border-radius:8px;font-size:12px;margin-right:5px}
+.sound{flex-shrink:0;width:47px;height:47px;border:0;border-radius:13px;background:#eaf0ff;font-size:23px}
+.trsound{display:block;margin-top:8px;padding:7px 10px;border:0;border-radius:9px;background:#fff0f3;color:#a52e48;font-weight:bold}
+.gameinfo h2{margin:0;color:#2448a8}
+.gameinfo p{color:#65718a;line-height:1.4}
+.stats{display:flex;justify-content:space-around;text-align:center;background:#edf2ff;padding:12px;border-radius:12px;font-weight:bold}
+.stats strong{display:block;font-size:21px;color:#315bd6}
+.progress{height:8px;background:#dce4f2;border-radius:10px;margin:12px 0;overflow:hidden}
+#bar{height:100%;width:0;background:#24a574}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{min-height:105px;padding:12px 7px;border:2px solid #dce4f2;border-radius:14px;background:white;font-weight:bold;line-height:1.35;overflow-wrap:anywhere}
+.card.selected{background:#fff4d3;border-color:#e4a91d}
+.card.matched{background:#e3f8ed;border-color:#6bc49b;opacity:.5}
+.card.wrong{background:#ffedf0;border-color:#d94e68}
+#feedback{text-align:center;font-weight:bold;color:#315bd6;padding:16px 4px;min-height:48px}
+#win{display:none;text-align:center;background:white;border:2px solid #6bc49b;border-radius:16px;padding:22px}
+#win h2{color:#16845b}
+footer{text-align:center;color:#68748b;padding:18px;font-size:12px}
+@media(min-width:600px){.sentence-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sentence{margin:0}.en{font-size:17px}}
+</style>
+</head>
+<body>
+<header>
+<div style="font-size:35px">🏫 🎒</div>
+<h1>My English Practice</h1>
+<p>3. SINIF · THEME 1: HELLO! (TÜM CÜMLELER)</p>
+</header>
+<nav>
+<button id="studyBtn" class="active" onclick="showPage('study')">🔊 Dinle ve Tekrar Et</button>
+<button id="gameBtn" onclick="showPage('game')">🎮 Eşleştirme Oyunu</button>
+</nav>
+<main>
+<section id="study" class="active">
+<div class="intro">
+<h2>Listen, Repeat, Learn!</h2>
+<p>İngilizce cümleyi dinle, sesli tekrar et ve Türkçe anlamını öğren. Her gün biraz çalış! ⭐</p>
+</div>
+<div class="controls">
+<button class="action blue" onclick="readAll()">▶️ Hepsini Dinle</button>
+<button class="action yellow" onclick="daily()">⭐ Günlük 10 Cümle</button>
+<button class="action white" onclick="stopAudio()">⏹️ Sesi Durdur</button>
+<button class="action white" onclick="shuffleSentences()">🔀 Karıştır</button>
+</div>
+<div id="sentenceList" class="sentence-list"></div>
+<div class="intro" style="background:#fff7dc">
+<strong>💡 Evde çalışma:</strong>
+Önce İngilizceyi dinle. Ardından kendin söyle. Son olarak Türkçesine bakmadan tekrar etmeyi dene. Hata yapmak öğrenmenin bir parçasıdır!
+</div>
+</section>
+
+<section id="game">
+<div class="gameinfo">
+<h2>Match the Sentences!</h2>
+<p>İngilizce cümleyi doğru Türkçe anlamıyla eşleştir. Doğru eşleşme 10 puan kazandırır!</p>
+<div class="stats">
+<div>Eşleşme<strong id="matched">0/90</strong></div>
+<div>Puan<strong id="score">0</strong></div>
+<div>Tur<strong id="round">1</strong></div>
+</div>
+<div class="progress"><div id="bar"></div></div>
+</div>
+<div id="grid" class="grid"></div>
+<div id="feedback">Bir kart seç! ⭐</div>
+<div class="controls">
+<button class="action yellow" onclick="startGame()">🔄 Yeniden Başla</button>
+<button class="action white" onclick="stopAudio()">⏹️ Sesi Durdur</button>
+</div>
+<div id="win">
+<div style="font-size:50px">🏆</div>
+<h2>Excellent Work!</h2>
+<p id="result"></p>
+<button class="action blue" onclick="startGame()">Tekrar Oyna</button>
+</div>
+</section>
+</main>
+<footer>ENGLISH TEACHER: DAVUT ULUĞTEKİN</footer>
+<script>
+const data=[
+["Hello! Welcome to school.", "Merhaba! Okula hoş geldin."],
+["I am a student.", "Ben bir öğrenciyim."],
+["Nice to meet you.", "Tanıştığıma memnun oldum."],
+["Let's start the lesson.", "Hadi derse başlayalım."],
+["This is our classroom.", "Burası bizim sınıfımız."],
+["I love my school.", "Okulumu seviyorum."],
+["How old are you?", "Kaç yaşındasın?"],
+["I am eight years old.", "Ben sekiz yaşındayım."],
+["Today is my birthday.", "Bugün benim doğum günüm."],
+["I am very happy.", "Ben çok mutluyum."],
+["I have got gifts.", "Hediyelerim var."],
+["Let's have a party!", "Hadi parti yapalım!"],
+["What month is it?", "Hangi aydayız?"],
+["It is January.", "Ocak ayındayız."],
+["The weather is cold.", "Hava soğuk."],
+["I have got a big coat.", "Büyük bir montum var."],
+["It is snowing outside.", "Dışarıda kar yağıyor."],
+["We are playing games.", "Biz oyunlar oynuyoruz."],
+["Where are you?", "Neredesin?"],
+["I am in the library.", "Ben kütüphanedeyim."],
+["I am with my friend.", "Arkadaşımla beraberim."],
+["We love reading books.", "Biz kitap okumayı severiz."],
+["Be quiet, please.", "Sessiz olun, lütfen."],
+["Libraries are great.", "Kütüphaneler harikadır."],
+["When is your birthday?", "Doğum günün ne zaman?"],
+["My birthday is in April.", "Doğum günüm Nisan'da."],
+["I love spring time.", "İlkbahar zamanını severim."],
+["The flowers are beautiful.", "Çiçekler güzeldir."],
+["I invite my friends.", "Arkadaşlarımı davet ederim."],
+["We sing songs.", "Biz şarkılar söyleriz."],
+["Today is a great day.", "Bugün harika bir gün."],
+["It is the twenty-third of April.", "Yirmi Üç Nisan'dır."],
+["It is Children's Day.", "Bugün Çocuk Bayramı'dır."],
+["We are singing and dancing.", "Şarkı söylüyor ve dans ediyoruz."],
+["Look at the flags.", "Bayraklara bak."],
+["Happy Children's Day!", "Çocuk Bayramı kutlu olsun!"],
+["August is a hot month.", "Ağustos sıcak bir aydır."],
+["I am on holiday.", "Ben tatildeyim."],
+["I am with my family.", "Ailemle beraberim."],
+["We are very happy.", "Biz çok mutluyuz."],
+["I love summer holidays.", "Yaz tatillerini severim."],
+["Let's swim today.", "Hadi bugün yüzelim."],
+["Who is she?", "O kim?"],
+["She is my new friend.", "O benim yeni arkadaşım."],
+["What is her name?", "Onun adı ne?"],
+["Her name is Ayşe.", "Onun adı Ayşe."],
+["She is a student.", "O bir öğrencidir."],
+["Welcome to our class.", "Sınıfımıza hoş geldin."],
+["It is September.", "Eylül ayındayız."],
+["School starts in September.", "Okul Eylül'de başlar."],
+["I have got a new bag.", "Yeni bir çantam var."],
+["It is a blue bag.", "O mavi bir çantadır."],
+["I am ready for school.", "Okul için hazırım."],
+["I meet my friends.", "Arkadaşlarımla buluşurum."],
+["Today is the twenty-ninth of October.", "Bugün Yirmi Dokuz Ekim."],
+["It is Republic Day.", "Bugün Cumhuriyet Bayramı."],
+["We have got red flags.", "Kırmızı bayraklarımız var."],
+["We are at school.", "Biz okuldayız."],
+["It is a great holiday.", "Bu harika bir bayramdır."],
+["Happy Republic Day!", "Cumhuriyet Bayramı kutlu olsun!"],
+["How old is your brother?", "Erkek kardeşin kaç yaşında?"],
+["He is ten years old.", "O on yaşında."],
+["His birthday is in March.", "Onun doğum günü Mart'tadır."],
+["He is a tall boy.", "O uzun boylu bir çocuktur."],
+["I have got a gift for him.", "Onun için bir hediyem var."],
+["He likes his gift.", "O hediyesini sever."],
+["I am hungry.", "Ben açım."],
+["I am in the school canteen.", "Okul kantinindeyim."],
+["I have got a sandwich.", "Bir sandviçim var."],
+["I want some water, please.", "Biraz su istiyorum, lütfen."],
+["Yummy! It is delicious.", "Nefis! Bu lezzetli."],
+["Enjoy your meal.", "Afiyet olsun."],
+["It is February.", "Şubat ayındayız."],
+["It is snowing today.", "Bugün kar yağıyor."],
+["I have got a red scarf.", "Kırmızı bir atkım var."],
+["It is very cold outside.", "Dışarısı çok soğuk."],
+["Put on your gloves.", "Eldivenlerini giy."],
+["Let's make a snowman.", "Hadi kardan adam yapalım."],
+["It is the nineteenth of May.", "On Dokuz Mayıs."],
+["It is Youth and Sports Day.", "Gençlik ve Spor Bayramı'dır."],
+["We are in the sports hall.", "Spor salonundayız."],
+["We are playing basketball.", "Basketbol oynuyoruz."],
+["Sports are good for us.", "Spor bizim için iyidir."],
+["We are a good team.", "Biz iyi bir takımız."],
+["December is the last month.", "Aralık son aydır."],
+["The year is ending.", "Yıl bitiyor."],
+["I am at home.", "Ben evdeyim."],
+["We are happy and healthy.", "Biz mutlu ve sağlıklıyız."],
+["See you next year!", "Gelecek yıl görüşürüz!"]
+];
+let enVoice=null,trVoice=null;
+function voices(){if(!('speechSynthesis'in window))return;let v=speechSynthesis.getVoices();enVoice=v.find(x=>/^en-GB$/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang));trVoice=v.find(x=>/^tr-TR$/i.test(x.lang))||v.find(x=>/^tr/i.test(x.lang))}
+if('speechSynthesis'in window){voices();speechSynthesis.onvoiceschanged=voices}
+function stopAudio(){if('speechSynthesis'in window)speechSynthesis.cancel();reading=false}
+function speak(text,lang='en',done){if(!('speechSynthesis'in window))return;stopAudio();let u=new SpeechSynthesisUtterance(text);u.lang=lang==='tr'?'tr-TR':'en-GB';let v=lang==='tr'?trVoice:enVoice;if(v)u.voice=v;u.rate=.82;if(done)u.onend=done;speechSynthesis.speak(u)}
+let reading=false,queue=[],qi=0;
+function readAll(){stopAudio();queue=data.map(x=>x[0]);qi=0;reading=true;nextRead()}
+function daily(){stopAudio();queue=shuffle(data).slice(0,10).map(x=>x[0]);qi=0;reading=true;nextRead()}
+function nextRead(){if(!reading||qi>=queue.length){reading=false;return}let u=new SpeechSynthesisUtterance(queue[qi++]);u.lang='en-GB';if(enVoice)u.voice=enVoice;u.rate=.82;u.onend=()=>{if(reading)nextRead()};u.onerror=()=>{if(reading)nextRead()};speechSynthesis.speak(u)}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function render(){let list=document.getElementById('sentenceList');list.innerHTML='';data.forEach((s,i)=>{let el=document.createElement('div');el.className='sentence';let words=document.createElement('div');words.className='words';let en=document.createElement('div');en.className='en';let n=document.createElement('span');n.className='num';n.textContent=i+1;en.append(n,document.createTextNode(s[0]));let tr=document.createElement('div');tr.className='tr';tr.textContent=s[1];let tb=document.createElement('button');tb.className='trsound';tb.textContent='🇹🇷 Türkçesini dinle';tb.onclick=()=>speak(s[1],'tr');words.append(en,tr,tb);let b=document.createElement('button');b.className='sound';b.textContent='🔊';b.setAttribute('aria-label','İngilizce cümleyi dinle');b.onclick=()=>speak(s[0]);el.append(words,b);list.append(el)})}
+function shuffleSentences(){stopAudio();let a=shuffle(data);data.splice(0,data.length,...a);render()}
+function showPage(p){stopAudio();document.getElementById('study').classList.toggle('active',p==='study');document.getElementById('game').classList.toggle('active',p==='game');document.getElementById('studyBtn').classList.toggle('active',p==='study');document.getElementById('gameBtn').classList.toggle('active',p==='game');if(p==='game'&&!remaining.length&&!finished)startGame();window.scrollTo(0,0)}
+let remaining=[],matched=0,score=0,round=1,first=null,locked=false,finished=false;
+function startGame(){stopAudio();remaining=shuffle(data.map((s,i)=>({s,key:i})));matched=0;score=0;round=1;first=null;locked=false;finished=false;document.getElementById('win').style.display='none';document.getElementById('grid').style.display='grid';document.getElementById('feedback').textContent='İlk kartı seç!';stats();makeRound()}
+function makeRound(){let grid=document.getElementById('grid');grid.innerHTML='';first=null;locked=false;if(!remaining.length){finish();return}let batch=remaining.splice(0,4),cards=[];batch.forEach(x=>{cards.push({key:x.key,text:x.s[0],lang:'en'},{key:x.key,text:x.s[1],lang:'tr'})});shuffle(cards).forEach(x=>{let b=document.createElement('button');b.className='card';b.textContent=x.text;b.dataset.key=x.key;b.dataset.lang=x.lang;b.onclick=()=>choose(b);grid.append(b)});document.getElementById('round').textContent=round}
+function choose(c){if(locked||c.classList.contains('matched')||c===first)return;speak(c.textContent,c.dataset.lang);if(!first){first=c;c.classList.add('selected');document.getElementById('feedback').textContent='Şimdi eşleşen anlamı bul!';return}let a=first,b=c;locked=true;if(a.dataset.key===b.dataset.key&&a.dataset.lang!==b.dataset.lang){a.classList.add('matched');b.classList.add('matched');a.classList.remove('selected');b.classList.remove('selected');matched++;score+=10;first=null;locked=false;document.getElementById('feedback').textContent='Excellent! +10 puan 🎉';stats();if(matched===data.length){finish();return}if([...document.querySelectorAll('.card')].every(x=>x.classList.contains('matched'))){round++;setTimeout(makeRound,500)}}else{a.classList.add('wrong');b.classList.add('wrong');score=Math.max(0,score-2);stats();document.getElementById('feedback').textContent='Tekrar dene! −2 puan';setTimeout(()=>{a.classList.remove('selected','wrong');b.classList.remove('selected','wrong');first=null;locked=false},650)}}
+function stats(){document.getElementById('matched').textContent=matched+'/'+data.length;document.getElementById('score').textContent=score;document.getElementById('bar').style.width=(matched/data.length*100)+'%'}
+function finish(){finished=true;locked=true;document.getElementById('grid').style.display='none';document.getElementById('win').style.display='block';document.getElementById('result').textContent='Harika! Toplam puanın: '+score;speak('Congratulations! Excellent work!')}
+render();stats();
+</script>
+</body>
+</html>
