@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>2. Sınıf T2 Kelime Öğren & Oyna</title>
+<style>
+  :root {
+    --primary: #3b82f6; /* 2. Sınıf Mavi */
+    --secondary: #f59e0b; /* Turuncu-Sarı Ton */
+    --bg: #eff6ff; 
+    --text: #1e293b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+  body { background-color: var(--bg); color: var(--text); height: 100dvh; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Üst Sekmeler (Tab) */
+  .tabs { display: flex; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10; }
+  .tab-btn { flex: 1; padding: 18px; border: none; background: none; font-size: 18px; font-weight: 800; color: #64748b; cursor: pointer; transition: 0.2s; border-bottom: 4px solid transparent; }
+  .tab-btn.active { color: var(--primary); border-bottom: 4px solid var(--primary); }
+  
+  /* Ana İçerik Alanı */
+  .content { flex: 1; overflow-y: auto; position: relative; padding-bottom: 60px; }
+  .panel { display: none; padding: 20px; height: 100%; animation: fadeIn 0.3s ease; }
+  .panel.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 1. Sekme: Öğrenme Kartı */
+  .learn-card { background: #fff; width: 100%; max-width: 400px; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 30px rgba(59,130,246,0.08); border: 2px solid #bfdbfe; }
+  .visual { font-size: 80px; margin-bottom: 10px; display: block; }
+  .en-word { font-size: 34px; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
+  .tr-word { font-size: 20px; font-weight: 600; color: #64748b; margin-bottom: 25px; }
+  
+  .controls { display: flex; gap: 15px; justify-content: center; margin-top: 20px; width: 100%; max-width: 400px; }
+  .btn { flex: 1; padding: 15px; border: none; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  .btn:active { transform: scale(0.96); }
+  .btn-prev { background: #94a3b8; }
+  .btn-play { background: var(--secondary); flex: 1.5; font-size: 22px; }
+  .btn-next { background: var(--primary); }
+
+  /* 2. Sekme: Oyun */
+  .game-header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: 900; font-size: 18px; }
+  .question-box { text-align: center; margin-bottom: 25px; width: 100%; max-width: 400px; background: #fff; padding: 30px 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border: 2px solid #bfdbfe; }
+  .question-text { font-size: 32px; font-weight: 900; color: var(--primary); }
+  
+  .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; max-width: 400px; }
+  .option-btn { background: #fff; border: 3px solid #bfdbfe; border-radius: 16px; padding: 18px; font-size: 20px; font-weight: 800; color: var(--text); cursor: pointer; transition: 0.2s; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+  .option-btn:active { transform: scale(0.98); }
+  .option-btn.correct { background: #dcfce7; border-color: #22c55e; color: #116c32; }
+  .option-btn.wrong { background: #fee2e2; border-color: #ef4444; color: #9b1c1c; }
+
+  /* Geri Bildirim Mesajı */
+  #gameFeedback { margin-top: 20px; font-size: 22px; font-weight: 900; min-height: 35px; text-align: center; width: 100%; max-width: 400px; }
+
+  /* Alt Bilgi (Öğretmen Adı - Sabitlendi) */
+  .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; text-align: center; font-size: 14px; font-weight: 900; color: #64748b; border-top: 1px solid #e2e8f0; letter-spacing: 0.5px; z-index: 999; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
+  .footer span { color: var(--primary); }
+</style>
+</head>
+<body>
+
+  <!-- Sekmeler -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('learn')">📚 Öğren</button>
+    <button class="tab-btn" onclick="switchTab('game')">🎮 Oyun</button>
+  </div>
+
+  <!-- İçerik -->
+  <div class="content">
+    
+    <!-- SEKME 1: KELİME ÖĞRENME -->
+    <div id="learnPanel" class="panel active">
+      <div class="learn-card" id="learnCard">
+        <!-- JS ile doldurulacak -->
+      </div>
+      <div class="controls">
+        <button class="btn btn-prev" onclick="prevWord()">⬅</button>
+        <button class="btn btn-play" onclick="playCurrentWord()">🔊 Dinle</button>
+        <button class="btn btn-next" onclick="nextWord()">➡</button>
+      </div>
+    </div>
+
+    <!-- SEKME 2: OYUN (Görselsiz) -->
+    <div id="gamePanel" class="panel">
+      <div class="game-header">
+        <span>Puan: <span id="scoreDisp" style="color:var(--primary)">0</span></span>
+        <span>Soru: <span id="qCountDisp">1</span></span>
+      </div>
+      <div class="question-box">
+        <div class="question-text" id="gameQuestion">...</div>
+      </div>
+      <div class="options-grid" id="gameOptions">
+        <!-- JS ile doldurulacak -->
+      </div>
+      <!-- Uyarı Alanı -->
+      <div id="gameFeedback"></div>
+    </div>
+
+  </div>
+
+  <!-- Öğretmen İmzası -->
+  <div class="footer">
+    ENGLISH TEACHER: <span>DAVUT ULUĞTEKİN</span>
+  </div>
+
+<script>
+  // 2. Sınıf Theme 2 Kelimeleri (Eşyalar, Renkler ve Sayılar bir arada)
+  const words = [
+    // Sınıf Eşyaları ve Eylemler
+    { en: 'blackboard', tr: 'kara tahta', img: '⬛' },
+    { en: 'board', tr: 'tahta', img: '📋' },
+    { en: 'book', tr: 'kitap', img: '📚' },
+    { en: 'bookcase', tr: 'kitaplık', img: '🗄️' },
+    { en: 'box', tr: 'kutu', img: '📦' },
+    { en: 'break', tr: 'teneffüs', img: '🔔' },
+    { en: 'chair', tr: 'sandalye', img: '🪑' },
+    { en: 'chalk', tr: 'tebeşir', img: '🖍️' },
+    { en: 'clock', tr: 'duvar saati', img: '🕰️' },
+    { en: 'close', tr: 'kapatmak', img: '📕' },
+    { en: 'colour', tr: 'boyamak', img: '🎨' },
+    { en: 'come in', tr: 'içeri girmek', img: '🚶' },
+    { en: 'computer', tr: 'bilgisayar', img: '💻' },
+    { en: 'crayon', tr: 'pastel boya', img: '🖍️' },
+    { en: 'desk', tr: 'sıra', img: '🪑' },
+    { en: 'door', tr: 'kapı', img: '🚪' },
+    { en: 'draw', tr: 'resim çizmek', img: '✏️' },
+    { en: 'glue', tr: 'yapıştırıcı', img: '🧴' },
+    { en: 'listen', tr: 'dinlemek', img: '👂' },
+    { en: 'look', tr: 'bakmak', img: '👀' },
+    { en: 'notebook', tr: 'defter', img: '📓' },
+    { en: 'object', tr: 'nesne', img: '🎲' },
+    { en: 'open', tr: 'açmak', img: '📖' },
+    { en: 'pass', tr: 'uzatmak', img: '🤲' },
+    { en: 'pencil', tr: 'kalem', img: '✏️' },
+    { en: 'pencil case', tr: 'kalem kutusu', img: '👝' },
+    { en: 'picture', tr: 'resim', img: '🖼️' },
+    { en: 'please', tr: 'lütfen', img: '🙏' },
+    { en: 'point', tr: 'işaret etmek', img: '👈' },
+    { en: 'quiet', tr: 'sessiz', img: '🤫' },
+    { en: 'repeat', tr: 'tekrar etmek', img: '🔁' },
+    { en: 'rubber', tr: 'silgi', img: '🧽' },
+    { en: 'ruler', tr: 'cetvel', img: '📏' },
+    { en: 'say', tr: 'söylemek', img: '🗣️' },
+    { en: 'scissors', tr: 'makas', img: '✂️' },
+    { en: 'schoolbag', tr: 'okul çantası', img: '🎒' },
+    { en: 'sharpener', tr: 'kalemtıraş', img: '⚙️' },
+    { en: 'show', tr: 'göstermek', img: '👐' },
+    { en: 'sit down', tr: 'oturmak', img: '🪑' },
+    { en: 'smart board', tr: 'akıllı tahta', img: '🖥️' },
+    { en: 'stand up', tr: 'ayağa kalkmak', img: '🧍' },
+    { en: 'table', tr: 'masa', img: '🪑' },
+    { en: 'wall', tr: 'duvar', img: '🧱' },
+    { en: 'whiteboard', tr: 'beyaz tahta', img: '⬜' },
+    { en: 'window', tr: 'pencere', img: '🪟' },
+    // Renkler
+    { en: 'red', tr: 'kırmızı', img: '🔴' },
+    { en: 'white', tr: 'beyaz', img: '⚪' },
+    { en: 'black', tr: 'siyah', img: '⚫' },
+    { en: 'pink', tr: 'pembe', img: '🩷' },
+    { en: 'blue', tr: 'mavi', img: '🔵' },
+    { en: 'purple', tr: 'mor', img: '🟣' },
+    { en: 'yellow', tr: 'sarı', img: '🟡' },
+    { en: 'brown', tr: 'kahverengi', img: '🟤' },
+    { en: 'green', tr: 'yeşil', img: '🟢' },
+    { en: 'orange', tr: 'turuncu', img: '🟠' },
+    { en: 'gray', tr: 'gri', img: '🩶' },
+    // Sayılar
+    { en: 'one', tr: 'bir', img: '1️⃣' },
+    { en: 'two', tr: 'iki', img: '2️⃣' },
+    { en: 'three', tr: 'üç', img: '3️⃣' },
+    { en: 'four', tr: 'dört', img: '4️⃣' },
+    { en: 'five', tr: 'beş', img: '5️⃣' },
+    { en: 'six', tr: 'altı', img: '6️⃣' },
+    { en: 'seven', tr: 'yedi', img: '7️⃣' },
+    { en: 'eight', tr: 'sekiz', img: '8️⃣' },
+    { en: 'nine', tr: 'dokuz', img: '9️⃣' },
+    { en: 'ten', tr: 'on', img: '🔟' },
+    { en: 'eleven', tr: 'on bir', img: '11' },
+    { en: 'twelve', tr: 'on iki', img: '12' },
+    { en: 'thirteen', tr: 'on üç', img: '13' },
+    { en: 'fourteen', tr: 'on dört', img: '14' },
+    { en: 'fifteen', tr: 'on beş', img: '15' },
+    { en: 'sixteen', tr: 'on altı', img: '16' },
+    { en: 'seventeen', tr: 'on yedi', img: '17' },
+    { en: 'eighteen', tr: 'on sekiz', img: '18' },
+    { en: 'nineteen', tr: 'on dokuz', img: '19' },
+    { en: 'twenty', tr: 'yirmi', img: '20' }
+  ];
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tabId + 'Panel').classList.add('active');
+
+    if(tabId === 'game') initGame();
+    if(tabId === 'learn') playCurrentWord();
+  }
+
+  const synth = window.speechSynthesis;
+  function getBritishVoice() {
+    const voices = synth.getVoices();
+    return voices.find(v => v.lang === 'en-GB' && v.name.includes('Google')) || 
+           voices.find(v => v.lang === 'en-GB') || 
+           voices.find(v => v.lang.startsWith('en'));
+  }
+
+  function speakWord(text) {
+    if(!('speechSynthesis' in window)) return;
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = getBritishVoice();
+    utterance.lang = 'en-GB';
+    utterance.rate = 0.8; 
+    synth.speak(utterance);
+  }
+
+  // --- SEKME 1: ÖĞRENME (Görselli) ---
+  let currentIndex = 0;
+
+  function renderLearnCard() {
+    const word = words[currentIndex];
+    document.getElementById('learnCard').innerHTML = `
+      <span class="visual">${word.img}</span>
+      <div class="en-word">${word.en}</div>
+      <div class="tr-word">${word.tr}</div>
+      <div style="margin-top: 10px; color: #94a3b8; font-size: 14px; font-weight: bold;">Kelime ${currentIndex + 1} / ${words.length}</div>
+    `;
+  }
+
+  function playCurrentWord() { speakWord(words[currentIndex].en); }
+  function nextWord() { currentIndex = (currentIndex + 1) % words.length; renderLearnCard(); playCurrentWord(); }
+  function prevWord() { currentIndex = (currentIndex - 1 + words.length) % words.length; renderLearnCard(); playCurrentWord(); }
+
+  // --- SEKME 2: OYUN (Görselsiz ve Uyarı Sistemli) ---
+  let score = 0, qCount = 1, currentTarget = null, gameLocked = false;
+
+  function initGame() {
+    score = 0; qCount = 1;
+    document.getElementById('scoreDisp').innerText = score;
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    gameLocked = false;
+    document.getElementById('qCountDisp').innerText = qCount;
+    document.getElementById('gameFeedback').innerHTML = ''; // Uyarıyı temizle
+    
+    currentTarget = words[Math.floor(Math.random() * words.length)];
+    document.getElementById('gameQuestion').innerText = currentTarget.tr;
+
+    let options = [currentTarget];
+    let filteredWords = words.filter(w => w.en !== currentTarget.en);
+    filteredWords.sort(() => Math.random() - 0.5);
+    
+    options.push(filteredWords[0], filteredWords[1], filteredWords[2]);
+    options.sort(() => Math.random() - 0.5); 
+
+    const optionsContainer = document.getElementById('gameOptions');
+    optionsContainer.innerHTML = '';
+    
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = opt.en;
+      btn.onclick = () => checkAnswer(btn, opt.en);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(btn, selectedWord) {
+    if(gameLocked) return;
+    gameLocked = true;
+    speakWord(selectedWord); 
+
+    if(selectedWord === currentTarget.en) {
+      btn.classList.add('correct');
+      score += 10;
+      document.getElementById('scoreDisp').innerText = score;
+      document.getElementById('gameFeedback').innerHTML = '<span style="color: #116c32;">Harika! Doğru bildin 🌟</span>';
+      
+      // Doğruysa 1.5 saniye sonra geç
+      setTimeout(() => { qCount++; nextQuestion(); }, 1500);
+    } else {
+      btn.classList.add('wrong');
+      // Doğru şıkkı yeşil yap
+      Array.from(document.getElementById('gameOptions').children).forEach(b => {
+        if(b.innerText === currentTarget.en) b.classList.add('correct');
+      });
+      // Yanlış uyarı mesajı
+      document.getElementById('gameFeedback').innerHTML = '<span style="color: #9b1c1c;">Yanlış! Doğrusu: <b>' + currentTarget.en + '</b></span>';
+      
+      // Yanlışsa çocuğun okuyabilmesi için biraz daha uzun (2.5 saniye) bekle
+      setTimeout(() => { qCount++; nextQuestion(); }, 2500);
+    }
+  }
+
+  window.speechSynthesis.onvoiceschanged = getBritishVoice;
+  renderLearnCard();
+</script>
+</body>
+</html>
