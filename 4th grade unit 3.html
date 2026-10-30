@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>2. Sınıf T2 Kelime Öğren & Oyna</title>
+<style>
+  :root { --primary:#3b82f6; --secondary:#f59e0b; --bg:#eff6ff; --text:#1e293b; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; user-select:none; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; min-height:100%; }
+  body { background:linear-gradient(160deg,#eef6ff 0%,#f8fbff 58%,#fff8eb 100%); color:var(--text); display:flex; flex-direction:column; overflow:hidden; min-height:100dvh; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+
+  .tabs { display:flex; gap:7px; padding:8px 10px; background:rgba(255,255,255,.97); box-shadow:0 4px 16px rgba(27,66,120,.08); z-index:10; flex-shrink:0; }
+  .tab-btn { flex:1; padding:11px 3px; border:0; border-bottom:3px solid transparent; border-radius:13px 13px 10px 10px; background:#f1f5fb; font-size:clamp(12px,3.5vw,17px); font-weight:900; color:#64748b; cursor:pointer; white-space:nowrap; min-width:0; transition:background .18s ease,color .18s ease; }
+  .tab-btn.active { color:#1759b8; background:#e7f0ff; border-bottom-color:#3478e5; }
+
+  .content { flex:1; overflow-y:auto; position:relative; -webkit-overflow-scrolling:touch; min-height:0; }
+  .panel { display:none; padding:clamp(10px,3vw,18px); min-height:100%; animation:fadeIn .22s ease; }
+  .panel.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  #learnPanel, #gamePanel { padding-bottom:22px; }
+  button, select { font:inherit; }
+  button:focus-visible, select:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+  .learn-card { background:rgba(255,255,255,.98); width:100%; max-width:470px; border-radius:28px; padding:clamp(14px,4vw,24px) 18px; text-align:center; box-shadow:0 14px 34px rgba(40,83,145,.14); border:2px solid #d5e5ff; }
+  .visual { display:block; width:min(100%,310px); height:clamp(150px,42vw,205px); margin:0 auto 12px; overflow:hidden; border-radius:22px; background:linear-gradient(145deg,#edf7ff,#fff5d8); border:1px solid #d8e8f7; box-shadow:inset 0 -5px 0 rgba(42,92,142,.04); }
+  .visual svg { display:block; width:100%; height:100%; }
+  .en-word { font-size:clamp(26px,8vw,34px); font-weight:900; color:var(--primary); margin-bottom:4px; word-break:break-word; }
+  .tr-word { font-size:clamp(16px,5vw,20px); font-weight:600; color:#64748b; margin-bottom:20px; }
+  .controls { display:flex; gap:10px; justify-content:center; margin-top:18px; width:100%; max-width:400px; }
+  .btn { flex:1; padding:14px 8px; border:none; border-radius:16px; font-size:clamp(15px,4.5vw,18px); font-weight:bold; cursor:pointer; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 15px rgba(0,0,0,.1); touch-action:manipulation; }
+  .btn:active { transform:scale(.96); }
+  .btn-prev { background:#94a3b8; }
+  .btn-play { background:var(--secondary); flex:1.6; font-size:clamp(16px,5vw,22px); }
+  .btn-next { background:var(--primary); }
+
+  .game-header { width:100%; max-width:400px; display:flex; justify-content:space-between; margin-bottom:16px; font-weight:900; font-size:clamp(15px,4.5vw,18px); }
+  .question-box { text-align:center; margin-bottom:20px; width:100%; max-width:400px; background:#fff; padding:24px 16px; border-radius:20px; box-shadow:0 8px 20px rgba(0,0,0,.05); border:2px solid #bfdbfe; }
+  .question-text { font-size:clamp(24px,8vw,32px); font-weight:900; color:var(--primary); word-break:break-word; }
+  .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; }
+  .option-btn { min-height:58px; background:#fff; border:2px solid #c9dcfb; border-radius:16px; padding:13px 8px; font-size:clamp(14px,4.2vw,19px); font-weight:900; color:var(--text); cursor:pointer; text-align:center; overflow-wrap:anywhere; touch-action:manipulation; box-shadow:0 3px 0 #e2ebfa; }
+  .option-btn.correct { background:#dcfce7; border-color:#22c55e; color:#116c32; }
+  .option-btn.wrong { background:#fee2e2; border-color:#ef4444; color:#9b1c1c; }
+  #gameFeedback { margin-top:16px; font-size:clamp(16px,5vw,22px); font-weight:900; min-height:32px; text-align:center; width:100%; max-width:400px; }
+
+  .footer { flex-shrink:0; background:rgba(255,255,255,.94); padding:7px 8px; text-align:center; font-size:11px; font-weight:800; color:#718096; border-top:1px solid #e2eaf5; letter-spacing:.2px; }
+
+  /* ===== ZIPLAMA TAM EKRAN ===== */
+  #jumpPanel.panel { padding:0; }
+  #jumpPanel.panel.active { display:flex; flex-direction:column; padding:0; height:100%; overflow:hidden; justify-content:stretch; align-items:stretch; }
+  .jump-full { display:flex; flex-direction:column; width:100%; height:100%; min-height:0; }
+
+  .jump-topbar { flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05); font-weight:900; color:#263c57; font-size:clamp(11px,3.4vw,14px); z-index: 10;}
+  .jump-topbar > span { background:#eef5ff; border-radius:999px; padding:4px 9px; white-space:nowrap; display:inline-flex; align-items:center; gap:3px; }
+
+  .jump-cat-row { flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:6px; padding:5px 8px; background:#f5f9ff; font-weight:800; color:#263c57; font-size:clamp(11px,3.3vw,13px); border-bottom:1px solid #e2e8f0; z-index: 10;}
+  .jump-select { padding:5px 8px; border:2px solid #bfdbfe; border-radius:8px; font-weight:800; font-size:clamp(11px,3.3vw,13px); max-width:60%; background:#fff; color:#263c57; }
+
+  .jump-stage { flex:1; position:relative; min-height:0; background:#a2d4f5; overflow:hidden; touch-action:manipulation; border-top:3px solid rgba(255,255,255,.65); border-bottom:3px solid rgba(255,255,255,.65); }
+  #jumpCanvas { position:absolute; inset:0; display:block; width:100%; height:100%; touch-action:manipulation; cursor:pointer; }
+
+  /* Türkçe kelime kutusu */
+  .jump-tr-banner {
+    position:absolute; left:50%; bottom:clamp(72px,16%,110px); transform:translateX(-50%);
+    background:linear-gradient(135deg,#fff,#fff7d6); color:#34445b;
+    padding:11px 16px; border-radius:22px;
+    font-size:clamp(20px,5.8vw,27px); font-weight:900;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 -4px 0 rgba(0,0,0,0.03); 
+    border: 3px solid #ffffff; outline:2px solid rgba(37,99,235,.14);
+    z-index:4; text-align:center; pointer-events:none; width:min(82%,340px);
+    line-height:1.2;
+  }
+
+  .jump-controls { flex-shrink:0; display:flex; justify-content:center; gap:8px; padding:8px max(8px,env(safe-area-inset-right)) 10px max(8px,env(safe-area-inset-left)); background:#fff; box-shadow:0 -2px 8px rgba(0,0,0,.05); }
+  .jump-controls button { border:0; border-radius:12px; padding:12px 8px; font-size:clamp(11px,3.3vw,15px); font-weight:900; background:linear-gradient(135deg,#ff8a3d,#f05b25); color:#fff; cursor:pointer; box-shadow:0 3px 0 #c8471d; touch-action:manipulation; flex:1; max-width:240px; }
+  .jump-controls button:active { transform:translateY(2px); box-shadow:0 1px 0 #c8471d; }
+  .jump-controls button.secondary { background:linear-gradient(135deg,#fff,#eaf2fa); color:#263c57; box-shadow:0 3px 0 #c8d5e2; }
+
+  .jump-feedback { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); min-height:24px; text-align:center; font-size:clamp(13px,3.9vw,17px); font-weight:900; color:#263c57; padding:6px 14px; line-height:1.3; background:rgba(255,255,255,.92); border-radius:999px; box-shadow:0 3px 10px rgba(0,0,0,.15); max-width:92%; pointer-events:none; z-index:5; }
+  .jump-feedback:empty { display:none; }
+  @media (max-width:380px) {
+    .tabs { padding:6px; gap:5px; }
+    .tab-btn { padding:10px 2px; font-size:12px; }
+    .panel { padding:10px; }
+    .controls { gap:7px; }
+    .btn { padding:12px 5px; border-radius:13px; }
+    .game-header { margin-bottom:10px; }
+    .question-box { padding:17px 12px; margin-bottom:13px; }
+    .options-grid { gap:8px; }
+    .option-btn { min-height:54px; }
+    .jump-cat-row { gap:4px; }
+    .jump-select { max-width:58%; }
+  }
+  @media (max-height:650px) {
+    .learn-card { padding:14px; }
+    .visual { font-size:50px; margin-bottom:2px; }
+    .tr-word { margin-bottom:8px; }
+    .controls { margin-top:10px; }
+    .question-box { padding:12px; margin-bottom:10px; }
+    .jump-topbar { padding:4px 6px; }
+    .jump-cat-row { padding:4px 6px; }
+    .jump-controls { padding:5px 7px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('learn')">📚 Kelimeler</button>
+    <button class="tab-btn" onclick="switchTab('game')">🎯 Test</button>
+    <button class="tab-btn" onclick="switchTab('jump')">🦘 Zıplama</button>
+  </div>
+
+  <div class="content">
+    <div id="learnPanel" class="panel active">
+      <div class="learn-card" id="learnCard"></div>
+      <div class="controls">
+        <button class="btn btn-prev" onclick="prevWord()">⬅</button>
+        <button class="btn btn-play" onclick="playCurrentWord()">🔊 Dinle</button>
+        <button class="btn btn-next" onclick="nextWord()">➡</button>
+      </div>
+    </div>
+
+    <div id="gamePanel" class="panel">
+      <div class="game-header">
+        <span>Puan: <span id="scoreDisp" style="color:var(--primary)">0</span></span>
+        <span>Soru: <span id="qCountDisp">1</span></span>
+      </div>
+      <div class="question-box"><div class="question-text" id="gameQuestion">...</div></div>
+      <div class="options-grid" id="gameOptions"></div>
+      <div id="gameFeedback"></div>
+    </div>
+
+    <div id="jumpPanel" class="panel">
+      <div class="jump-full">
+        <div class="jump-topbar">
+          <span>⭐ <span id="jumpScore">0</span></span>
+          <span>🏁 Sv <span id="jumpLevel">1</span></span>
+          <span>🎯 <span id="jumpCount">1</span></span>
+        </div>
+        <div class="jump-cat-row">
+          <span>4. SINIF • 3. ÜNİTE — TÜM KELİMELER</span>
+        </div>
+        <div class="jump-stage">
+          <canvas id="jumpCanvas"></canvas>
+          <div id="jumpTrBanner" class="jump-tr-banner" aria-live="polite"></div>
+          <div id="jumpFeedback" class="jump-feedback" aria-live="polite"></div>
+        </div>
+        <div class="jump-controls">
+          <button onclick="replayJumpWord()">🔊 Kelimeyi Dinle</button>
+          <button class="secondary" onclick="startJumpGame()">🔄 Baştan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">ENGLISH TEACHER: <span style="color:#3478e5">DAVUT ULUĞTEKİN</span></div>
+
+<script>
+  const words = [
+    // Eylemler
+    { en: 'carry', tr: 'taşımak', img: '📦' },
+    { en: 'catch the ball', tr: 'topu tutmak', img: '⚾' },
+    { en: 'climb a tree', tr: 'ağaca tırmanmak', img: '🧗‍♂️' },
+    { en: 'cook', tr: 'pişirmek', img: '🧑‍🍳' },
+    { en: 'dance', tr: 'dans etmek', img: '💃' },
+    { en: 'dive', tr: 'dalış yapmak', img: '🤿' },
+    { en: 'do puzzles', tr: 'yapboz yapmak', img: '🧩' },
+    { en: 'drive a car', tr: 'araba sürmek', img: '🚗' },
+    { en: 'fly', tr: 'uçmak', img: '🦸‍♂️' },
+    { en: 'fly a kite', tr: 'uçurtma uçurmak', img: '🪁' },
+    { en: 'help people', tr: 'insanlara yardım etmek', img: '🤝' },
+    { en: 'jump high', tr: 'yükseğe atlamak, zıplamak', img: '🦘' },
+    { en: 'paint', tr: 'resim yapmak', img: '🎨' },
+    { en: 'play the guitar', tr: 'gitar çalmak', img: '🎸' },
+    { en: 'play the piano', tr: 'piyano çalmak', img: '🎹' },
+    { en: 'play volleyball', tr: 'voleybol oynamak', img: '🏐' },
+    { en: 'read a book', tr: 'kitap okumak', img: '📖' },
+    { en: 'ride a bike', tr: 'bisiklet sürmek', img: '🚴' },
+    { en: 'ride a horse', tr: 'ata binmek', img: '🏇' },
+    { en: 'run fast', tr: 'hızlı koşmak', img: '🏃' },
+    { en: 'sing', tr: 'şarkı söylemek', img: '🎤' },
+    { en: 'speak', tr: 'konuşmak', img: '🗣️' },
+    { en: 'swim', tr: 'yüzmek', img: '🏊' },
+    { en: 'take pictures', tr: 'fotoğraf çekmek', img: '📸' },
+    { en: 'walk', tr: 'yürümek', img: '🚶' },
+    // Sahiplik ve İfadeler
+    { en: 'building', tr: 'bina', img: '🏢' },
+    { en: 'cartoon characters', tr: 'çizgi film karakterleri', img: '📺' },
+    { en: 'heavy', tr: 'ağır', img: '🏋️' },
+    { en: 'superhero', tr: 'süper kahraman', img: '🦸' },
+    { en: 'my', tr: 'benim', img: '🙋' },
+    { en: 'your', tr: 'senin/sizin', img: '👉' },
+    { en: 'his', tr: 'onun (erkekler için)', img: '👦' },
+    { en: 'her', tr: 'onun (kadınlar için)', img: '👧' },
+    { en: 'our', tr: 'bizim', img: '👫' },
+    { en: 'their', tr: 'onların', img: '👪' },
+    { en: 'whose', tr: 'kimin?', img: '❓' }
+  ];
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    const activeButton = Array.from(document.querySelectorAll('.tab-btn'))
+      .find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + tabId + "'"));
+    if (activeButton) activeButton.classList.add('active');
+    document.getElementById(tabId + 'Panel').classList.add('active');
+    if (tabId === 'game') initGame();
+    if (tabId === 'learn') playCurrentWord();
+    if (tabId === 'jump') startJumpGame();
+  }
+
+  const synth = window.speechSynthesis;
+  function getBritishVoice() {
+    const voices = synth.getVoices();
+    return voices.find(v => v.lang === 'en-GB' && v.name.includes('Google')) ||
+           voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en'));
+  }
+  function speakWord(text) {
+    if (!('speechSynthesis' in window)) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = getBritishVoice(); u.lang = 'en-GB'; u.rate = 0.8;
+    synth.speak(u);
+  }
+  function speakTurkish(text) {
+    if (!('speechSynthesis' in window)) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = synth.getVoices();
+    u.voice = voices.find(v => v.lang.toLowerCase().startsWith('tr')) || null;
+    u.lang = 'tr-TR'; u.rate = 0.85;
+    synth.speak(u);
+  }
+
+  // Düşme sesi (Web Audio API ile sentezlenmiş)
+  let audioCtx;
+  function playFallSound() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'triangle';
+      // Yüksek frekanstan alçağa doğru kayan bir ses (düşme efekti)
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.6);
+      
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.6);
+    } catch (e) {
+      console.log("Ses desteklenmiyor", e);
+    }
+  }
+
+  /* ===== KELİMEYE ÖZEL ÇİZİMLER ===== */
+  function illustration(w) {
+    const en=w.en;
+    const base=`<defs><linearGradient id="obj" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dcecff"/></linearGradient><linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e9b36d"/><stop offset="1" stop-color="#b87537"/></linearGradient></defs><ellipse cx="120" cy="157" rx="73" ry="9" fill="#b6cde0" opacity=".48"/>`;
+    const svg=(art,bg='#edf7ff')=>`<svg viewBox="0 0 240 180" role="img" aria-label="${en}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="240" height="180" rx="22" fill="${bg}"/>${base}${art}</svg>`;
+    const book=`<path d="M49 48 Q82 36 117 52 L117 135 Q82 119 49 133Z" fill="#fff" stroke="#5279ad" stroke-width="3"/><path d="M117 52 Q153 36 190 48 L190 133 Q153 119 117 135Z" fill="#fff" stroke="#5279ad" stroke-width="3"/><path d="M117 52V135" stroke="#5279ad" stroke-width="3"/><path d="M62 65l42 8M62 78l42 8M130 65l45-8M130 79l45-8" stroke="#8cb6e7" stroke-width="3" stroke-linecap="round"/>`;
+    const chair=`<path d="M78 48h72v48H78z" rx="8" fill="#ef8354" stroke="#a84c31" stroke-width="4"/><path d="M73 94h85v15H73z" fill="#ffb16f" stroke="#a84c31" stroke-width="4"/><path d="M83 108l-7 39M147 108l8 39M86 65l-5 25M143 65l5 25" stroke="#a84c31" stroke-width="7" stroke-linecap="round"/>`;
+    const pencil=`<g transform="rotate(-28 120 90)"><rect x="58" y="76" width="126" height="27" rx="6" fill="#ffd34e" stroke="#bd8a24" stroke-width="3"/><path d="M58 76L38 89.5 58 103Z" fill="#f0c69d" stroke="#bd8a24" stroke-width="3"/><path d="M38 89.5l9-6v12Z" fill="#374151"/><rect x="165" y="76" width="19" height="27" fill="#f28c8c"/><path d="M174 76v27" stroke="#fff" stroke-width="3"/></g>`;
+    const desk=`<path d="M48 65h144v22H48z" fill="#e9b36d" stroke="#9a622d" stroke-width="4"/><path d="M60 87l-8 56M180 87l8 56" stroke="#9a622d" stroke-width="9" stroke-linecap="round"/><path d="M72 95h96" stroke="#f7d7a3" stroke-width="4"/>`;
+    const blackboard=`<rect x="35" y="35" width="170" height="105" rx="7" fill="#a66b3f" stroke="#75452d" stroke-width="5"/><rect x="45" y="45" width="150" height="83" rx="3" fill="#236b60"/><path d="M66 70h70M66 88h98M66 106h53" stroke="#f9f4d7" stroke-width="4" stroke-linecap="round"/><rect x="83" y="141" width="74" height="8" rx="3" fill="#b87537"/>`;
+    const door=`<rect x="68" y="24" width="105" height="132" rx="4" fill="#c8864b" stroke="#89532e" stroke-width="5"/><rect x="80" y="36" width="81" height="108" fill="#e8b16c" stroke="#f7d6a1" stroke-width="3"/><circle cx="148" cy="94" r="5" fill="#70431f"/>`;
+    const window=`<rect x="43" y="30" width="154" height="116" rx="6" fill="#fff" stroke="#a66b3f" stroke-width="7"/><rect x="53" y="40" width="134" height="96" fill="#8ed8f5"/><path d="M120 40v96M53 88h134" stroke="#fff" stroke-width="8"/><path d="M65 70l22-20M142 78l26-26" stroke="#fff" stroke-width="4" opacity=".7"/>`;
+    const board=`<rect x="36" y="34" width="168" height="108" rx="8" fill="#fff" stroke="#3b82f6" stroke-width="5"/><path d="M55 61h122M55 82h88M55 103h106" stroke="#b5d3f4" stroke-width="4" stroke-linecap="round"/>`;
+    const table=`<path d="M35 65h170v21H35z" fill="#e7ad67" stroke="#985b2b" stroke-width="4"/><path d="M52 86l-7 59M188 86l7 59" stroke="#985b2b" stroke-width="10" stroke-linecap="round"/><path d="M61 72h118" stroke="#f8d8a6" stroke-width="4"/>`;
+    const bag=`<path d="M72 61Q72 43 92 43h56q20 0 20 18l10 83H62Z" fill="#f28b4b" stroke="#a94f2b" stroke-width="4"/><path d="M91 44v-8q0-17 29-17t29 17v8" fill="none" stroke="#a94f2b" stroke-width="7"/><rect x="88" y="78" width="64" height="37" rx="9" fill="#ffd166" stroke="#a94f2b" stroke-width="3"/><path d="M78 72v51M162 72v51" stroke="#ffd1a6" stroke-width="5"/>`;
+    const scissors=`<circle cx="78" cy="115" r="22" fill="#f6a6a6" stroke="#b34b55" stroke-width="5"/><circle cx="124" cy="126" r="22" fill="#f6a6a6" stroke="#b34b55" stroke-width="5"/><path d="M91 101L169 48M110 109L169 132" stroke="#9aa8b8" stroke-width="8" stroke-linecap="round"/><circle cx="100" cy="108" r="6" fill="#65758b"/>`;
+    const box=`<path d="M60 65l60-31 60 31-60 33Z" fill="#f4c36e" stroke="#a86d2f" stroke-width="4"/><path d="M60 65v63l60 28V98Z" fill="#d9964b" stroke="#a86d2f" stroke-width="4"/><path d="M180 65v63l-60 28V98Z" fill="#eab15f" stroke="#a86d2f" stroke-width="4"/><path d="M106 42l60 31" stroke="#fff0c7" stroke-width="7"/>`;
+    const artMap={
+      'blackboard':blackboard,'board':board,'whiteboard':`<rect x="35" y="35" width="170" height="105" rx="7" fill="#fff" stroke="#aab9c9" stroke-width="5"/><path d="M56 64h88M56 83h115M56 102h70" stroke="#83b6ed" stroke-width="4" stroke-linecap="round"/><path d="M87 142h66" stroke="#aab9c9" stroke-width="7" stroke-linecap="round"/>`,
+      'book':book,'notebook':`<rect x="69" y="27" width="105" height="130" rx="8" fill="#e8f1ff" stroke="#4275bd" stroke-width="4"/><rect x="78" y="36" width="87" height="112" rx="4" fill="#fff"/><path d="M91 53v78M103 55h48M103 70h48M103 85h48M103 100h48M103 115h38" stroke="#8db5e7" stroke-width="3"/><circle cx="72" cy="48" r="3" fill="#4275bd"/><circle cx="72" cy="72" r="3" fill="#4275bd"/><circle cx="72" cy="96" r="3" fill="#4275bd"/><circle cx="72" cy="120" r="3" fill="#4275bd"/>`,
+      'bookcase':`<rect x="61" y="24" width="118" height="133" rx="5" fill="#c88b50" stroke="#88572f" stroke-width="5"/><path d="M65 66h110M65 107h110" stroke="#88572f" stroke-width="6"/><rect x="73" y="35" width="20" height="28" rx="2" fill="#f16f6f"/><rect x="96" y="31" width="22" height="32" rx="2" fill="#f7c65c"/><rect x="122" y="39" width="19" height="24" rx="2" fill="#5da9e9"/><rect x="145" y="34" width="22" height="29" rx="2" fill="#6cc59a"/><rect x="75" y="76" width="23" height="27" fill="#5da9e9"/><rect x="101" y="73" width="18" height="30" fill="#f7c65c"/><rect x="122" y="80" width="23" height="23" fill="#f16f6f"/><rect x="148" y="74" width="20" height="29" fill="#6cc59a"/>`,
+      'box':box,'break':`<path d="M52 63h136v70H52z" fill="#f9d56e" stroke="#b8832c" stroke-width="4"/><path d="M45 62h150v16H45z" fill="#f6a83b" stroke="#b8832c" stroke-width="4"/><path d="M91 42q29-25 58 0" fill="none" stroke="#b8832c" stroke-width="7"/><path d="M78 93h84" stroke="#fff1b9" stroke-width="5" stroke-linecap="round"/>`,
+      'chair':chair,'chalk':`<g transform="rotate(-20 120 90)"><rect x="52" y="75" width="136" height="30" rx="8" fill="#fff" stroke="#b5c3d2" stroke-width="3"/><path d="M67 75v30M80 75v30" stroke="#e0e8f0" stroke-width="3"/><rect x="52" y="75" width="24" height="30" rx="6" fill="#fff4d5"/></g>`,
+      'clock':`<circle cx="120" cy="88" r="57" fill="#fff" stroke="#6b8db5" stroke-width="8"/><circle cx="120" cy="88" r="46" fill="#fefefe" stroke="#cbd9e8" stroke-width="2"/><g stroke="#425b77" stroke-width="4" stroke-linecap="round"><path d="M120 51v8M120 117v8M83 88h8M149 88h8"/><path d="M120 88V60M120 88l25 15" stroke="#ed6a5a" stroke-width="6"/></g><circle cx="120" cy="88" r="5" fill="#425b77"/>`,
+      'close':door,'open':`<path d="M54 34h80v119H54z" fill="#c8864b" stroke="#89532e" stroke-width="5"/><path d="M134 34l55 16v103l-55 0z" fill="#efc27f" stroke="#89532e" stroke-width="5"/><circle cx="118" cy="96" r="5" fill="#70431f"/><path d="M42 90h24M50 80l-10 10 10 10" stroke="#3b82f6" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+      'computer':`<rect x="43" y="31" width="154" height="94" rx="9" fill="#526b88" stroke="#34495e" stroke-width="5"/><rect x="53" y="41" width="134" height="74" rx="4" fill="#82d5f2"/><path d="M120 125v16M93 143h54" stroke="#526b88" stroke-width="8" stroke-linecap="round"/><path d="M73 96l25-24 21 15 27-29 22 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+      'crayon':pencil,'pencil':pencil,'desk':desk,'door':door,'draw':`<rect x="47" y="34" width="146" height="108" rx="6" fill="#fff" stroke="#9db8d5" stroke-width="4"/><circle cx="103" cy="69" r="17" fill="#ffd166"/><path d="M69 122l35-35 22 20 30-37 18 52Z" fill="#69bd8c" stroke="#43865e" stroke-width="3"/><path d="M171 37l20 8-48 78-14 6 2-16Z" fill="#f7c948" stroke="#b78620" stroke-width="3"/>`,
+      'glue':`<path d="M92 42h56v18l10 11v70q0 9-9 9H91q-9 0-9-9V71l10-11Z" fill="#8ed0f5" stroke="#4275a5" stroke-width="4"/><rect x="99" y="26" width="42" height="19" rx="4" fill="#f7c65c" stroke="#b8832c" stroke-width="3"/><rect x="91" y="83" width="58" height="37" rx="6" fill="#fff"/><path d="M101 96h38M101 106h27" stroke="#8db5e7" stroke-width="3"/>`,
+      'listen':`<path d="M68 91V76a52 52 0 0 1 104 0v15" fill="none" stroke="#e6a16d" stroke-width="13" stroke-linecap="round"/><rect x="58" y="82" width="25" height="48" rx="12" fill="#4f9de2"/><rect x="157" y="82" width="25" height="48" rx="12" fill="#4f9de2"/><path d="M176 128q-5 22-34 22" fill="none" stroke="#4f9de2" stroke-width="7" stroke-linecap="round"/>`,
+      'look':`<path d="M35 91q40-51 85-51t85 51q-40 51-85 51T35 91Z" fill="#fff" stroke="#4f8ecb" stroke-width="5"/><circle cx="120" cy="91" r="29" fill="#7bc5ef" stroke="#356b9d" stroke-width="4"/><circle cx="120" cy="91" r="14" fill="#243b53"/><circle cx="130" cy="81" r="6" fill="#fff"/>`,
+      'come in':`<rect x="123" y="29" width="76" height="124" fill="#c8864b" stroke="#89532e" stroke-width="5"/><rect x="134" y="40" width="55" height="102" fill="#f5d49b"/><circle cx="178" cy="93" r="4" fill="#70431f"/><circle cx="65" cy="63" r="14" fill="#f3bf91"/><path d="M50 82q15-13 30 0l10 35H40Z" fill="#4d9ce8"/><path d="M63 117l-9 29M78 117l12 29M49 91l-15 17M81 91l25 1" stroke="#344b65" stroke-width="7" stroke-linecap="round"/><path d="M98 88h25m-9-9 9 9-9 9" fill="none" stroke="#ef8354" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+      'point':`<circle cx="74" cy="67" r="19" fill="#f3bf91"/><path d="M56 91q18-14 36 0l9 47H47Z" fill="#4f9de2"/><path d="M87 102l47-29 33-1" fill="none" stroke="#f3bf91" stroke-width="15" stroke-linecap="round"/><path d="M161 63l16 9-16 8" fill="none" stroke="#f3bf91" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 137l-7 14M85 137l9 14" stroke="#344b65" stroke-width="8" stroke-linecap="round"/>`,
+      'sit down':chair,'stand up':`<circle cx="120" cy="38" r="18" fill="#f3bf91"/><path d="M101 61q19-12 38 0l9 49h-56Z" fill="#55a4e8"/><path d="M105 108l-10 39M135 108l10 39M102 69L77 91M138 69l25 22" stroke="#344b65" stroke-width="9" stroke-linecap="round"/>`,
+      'smart board':`<rect x="31" y="25" width="178" height="110" rx="8" fill="#34495e" stroke="#1f3347" stroke-width="5"/><rect x="41" y="35" width="158" height="90" fill="#72c8ee"/><path d="M61 106l28-31 23 19 28-36 29 48Z" fill="#fff" opacity=".8"/><path d="M120 135v15M89 151h62" stroke="#34495e" stroke-width="8" stroke-linecap="round"/>`,
+      'table':table,'wall':`<rect x="33" y="27" width="174" height="128" fill="#f1c98f" stroke="#bd8e56" stroke-width="5"/><path d="M33 69h174M33 111h174M91 27v42M151 27v42M62 69v42M121 69v42M181 69v42M91 111v44M151 111v44" stroke="#d4a66c" stroke-width="4"/>`,'window':window,
+      'schoolbag':bag,'scissors':scissors,'picture':`<rect x="43" y="25" width="154" height="130" rx="5" fill="#c58a4d" stroke="#8e5c30" stroke-width="5"/><rect x="54" y="36" width="132" height="108" fill="#fff"/><circle cx="95" cy="65" r="15" fill="#ffd166"/><path d="M61 130l39-47 24 26 24-35 27 56Z" fill="#68bc8b" stroke="#4a9166" stroke-width="3"/>`,
+      'pencil case':`<rect x="43" y="59" width="154" height="70" rx="22" fill="#ee8b9d" stroke="#a94b6b" stroke-width="4"/><path d="M56 72h128" stroke="#ffd7df" stroke-width="4"/><path d="M69 60v-10h13v10M95 60V45h13v15M121 60V49h13v11" stroke="#f4c94c" stroke-width="7" stroke-linecap="round"/>`,
+      'sharpener':`<path d="M57 66l62-31 63 31v58l-63 27-62-27Z" fill="#8cc9f4" stroke="#4275a5" stroke-width="4"/><path d="M91 72l29-14 29 14-29 14Z" fill="#d9e6f4" stroke="#4275a5" stroke-width="3"/><circle cx="120" cy="75" r="7" fill="#65758b"/>`,
+      'rubber':`<g transform="rotate(-12 120 90)"><rect x="55" y="60" width="130" height="62" rx="12" fill="#f6a6b7" stroke="#b85d77" stroke-width="4"/><path d="M120 61v60" stroke="#fff" stroke-width="5"/><rect x="125" y="65" width="52" height="52" rx="7" fill="#d5e9ff"/></g>`,
+      'ruler':`<g transform="rotate(-18 120 90)"><rect x="43" y="69" width="154" height="43" rx="5" fill="#f8d66d" stroke="#ba8d2e" stroke-width="4"/><path d="M58 70v17M73 70v11M88 70v17M103 70v11M118 70v17M133 70v11M148 70v17M163 70v11M178 70v17" stroke="#986b20" stroke-width="3"/></g>`,
+      'colour':`<path d="M120 30a62 62 0 1 0 0 124h13q14 0 14-13 0-9-8-14-7-5 2-11h13q28 0 28-28 0-58-62-58Z" fill="#fff" stroke="#8ca4bd" stroke-width="4"/><circle cx="87" cy="65" r="11" fill="#ef6262"/><circle cx="120" cy="53" r="11" fill="#f6c453"/><circle cx="153" cy="69" r="11" fill="#56b7e8"/><circle cx="82" cy="100" r="11" fill="#6bc28b"/><circle cx="118" cy="111" r="11" fill="#a58be5"/>`,
+      'please':`<circle cx="120" cy="50" r="18" fill="#f3bf91"/><path d="M101 73q19-13 38 0l12 45H89Z" fill="#f1b84b"/><path d="M101 87l18 21 18-21" fill="none" stroke="#f3bf91" stroke-width="11" stroke-linecap="round"/><path d="M101 117l-9 30M139 117l9 30" stroke="#344b65" stroke-width="8" stroke-linecap="round"/><path d="M151 36q15-18 25 0" fill="none" stroke="#f1b84b" stroke-width="4"/>`,
+      'quiet':`<circle cx="105" cy="53" r="18" fill="#f3bf91"/><path d="M86 76q19-13 38 0l13 59H73Z" fill="#69b7e8"/><path d="M109 79v44" stroke="#f3bf91" stroke-width="10" stroke-linecap="round"/><path d="M104 92l7 0" stroke="#a94b55" stroke-width="3"/><path d="M154 53q15 15 0 30M166 43q27 25 0 50" fill="none" stroke="#7ca6d4" stroke-width="4" stroke-linecap="round"/>`,
+      'repeat':`<path d="M66 67a50 50 0 0 1 85-18l13 13M164 45v20h-20" fill="none" stroke="#4f9de2" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M174 108a50 50 0 0 1-85 18l-13-13M76 130v-20h20" fill="none" stroke="#f0a34b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`,
+      'pass':`<rect x="92" y="68" width="57" height="44" rx="5" fill="#eaf3ff" stroke="#4f8ecb" stroke-width="4"/><path d="M43 99q17-22 37-2l23 16M197 99q-17-22-37-2l-23 16" fill="none" stroke="#f3bf91" stroke-width="13" stroke-linecap="round"/><path d="M60 48h36m-10-10 10 10-10 10M180 48h-36m10-10-10 10 10 10" fill="none" stroke="#4f9de2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+      'say':`<circle cx="91" cy="88" r="24" fill="#f3bf91"/><path d="M70 115q21-13 42 0l10 33H60Z" fill="#5ca8e5"/><path d="M125 56q35 0 35 26t-35 26l-12 13 2-15q-24-8-24-24t34-26Z" fill="#fff" stroke="#7ca6d4" stroke-width="4"/><circle cx="126" cy="81" r="4" fill="#f0a34b"/><circle cx="140" cy="81" r="4" fill="#f0a34b"/><circle cx="154" cy="81" r="4" fill="#f0a34b"/>`,
+      'show':`<rect x="92" y="49" width="76" height="70" rx="6" fill="#fff" stroke="#4f8ecb" stroke-width="4"/><circle cx="130" cy="69" r="11" fill="#ffd166"/><path d="M101 108l20-23 15 14 13-17 10 26Z" fill="#69bd8c"/><path d="M51 94l28-17M189 94l-28-17" stroke="#f3bf91" stroke-width="13" stroke-linecap="round"/><path d="M48 62l25 10M192 62l-25 10" stroke="#f3bf91" stroke-width="13" stroke-linecap="round"/>`,
+      'object':`<g><path d="M120 33l43 24v49l-43 25-43-25V57Z" fill="#72b9ed" stroke="#3978b4" stroke-width="4"/><path d="M120 33v49m43-25-43 25-43-25M120 82v49" fill="none" stroke="#d7eeff" stroke-width="4"/></g>`,
+      'orange':`<circle cx="120" cy="92" r="54" fill="#f79435" stroke="#ce6c1c" stroke-width="4"/><path d="M119 39q-3-18 14-22" fill="none" stroke="#5c9e58" stroke-width="8" stroke-linecap="round"/><path d="M125 32q26-18 42 0-20 18-42 0Z" fill="#68bc75"/>`
+    };
+    if (['red','white','black','pink','blue','purple','yellow','brown','green','orange','gray'].includes(en)) {
+      const colors={red:'#ef4444',white:'#ffffff',black:'#20232b',pink:'#f3a6c5',blue:'#3987e8',purple:'#9665d8',yellow:'#f5c842',brown:'#96613d',green:'#42ad6b',orange:'#f28b2d',gray:'#9ca3af'};
+      const c=colors[en];
+      return svg(`<rect x="43" y="31" width="154" height="117" rx="18" fill="#fff" stroke="#d4e2ef" stroke-width="3"/><circle cx="120" cy="84" r="39" fill="${c}" stroke="${en==='white'?'#c7d2df':'rgba(20,40,60,.18)'}" stroke-width="4"/><path d="M91 66q15-17 29-12" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/><rect x="78" y="132" width="84" height="6" rx="3" fill="#e2eaf3"/>`, '#f4f8ff');
+    }
+    if (/^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)$/.test(en)) {
+      const numberWords=['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+      const numeral=numberWords.indexOf(en)+1;
+      return svg(`<rect x="51" y="23" width="138" height="135" rx="22" fill="#fff" stroke="#a9c8eb" stroke-width="4"/><path d="M70 42h100" stroke="#e0edfb" stroke-width="6" stroke-linecap="round"/><text x="120" y="112" text-anchor="middle" font-family="Arial,sans-serif" font-size="${numeral>=10?57:68}" font-weight="900" fill="#397bd0">${numeral}</text><path d="M88 132h64" stroke="#f3b64c" stroke-width="6" stroke-linecap="round"/>`, '#eef7ff');
+    }
+    return svg(artMap[en] || book);
+  }
+
+  /* ===== ÖĞRENME ===== */
+  let currentIndex = 0;
+  function renderLearnCard() {
+    const w = words[currentIndex];
+    document.getElementById('learnCard').innerHTML = `
+      <span class="visual" style="display:grid;place-items:center;font-size:clamp(76px,18vw,112px);">${w.img}</span>
+      <div class="en-word">${w.en}</div>
+      <div class="tr-word">${w.tr}</div>
+      <div style="margin-top:8px;color:#94a3b8;font-size:13px;font-weight:bold;">Kelime ${currentIndex+1} / ${words.length}</div>`;
+  }
+  function playCurrentWord() { speakWord(words[currentIndex].en); }
+  function nextWord() { currentIndex=(currentIndex+1)%words.length; renderLearnCard(); playCurrentWord(); }
+  function prevWord() { currentIndex=(currentIndex-1+words.length)%words.length; renderLearnCard(); playCurrentWord(); }
+
+  /* ===== OYUN ===== */
+  let score=0, qCount=1, currentTarget=null, gameLocked=false;
+  function initGame() { score=0; qCount=1; document.getElementById('scoreDisp').innerText=score; nextQuestion(); }
+  function nextQuestion() {
+    gameLocked=false;
+    document.getElementById('qCountDisp').innerText=qCount;
+    document.getElementById('gameFeedback').innerHTML='';
+    currentTarget = words[Math.floor(Math.random()*words.length)];
+    document.getElementById('gameQuestion').innerText = currentTarget.tr;
+    let options=[currentTarget];
+    let filtered = words.filter(w=>w.en!==currentTarget.en).sort(()=>Math.random()-.5);
+    options.push(filtered[0], filtered[1], filtered[2]);
+    options.sort(()=>Math.random()-.5);
+    const container = document.getElementById('gameOptions');
+    container.innerHTML='';
+    options.forEach(opt=>{
+      const btn=document.createElement('button');
+      btn.className='option-btn'; btn.innerText=opt.en;
+      btn.onclick=()=>checkAnswer(btn,opt.en);
+      container.appendChild(btn);
+    });
+  }
+  function checkAnswer(btn, selectedWord) {
+    if (gameLocked) return;
+    gameLocked=true;
+    speakWord(selectedWord);
+    if (selectedWord===currentTarget.en) {
+      btn.classList.add('correct'); score+=10;
+      document.getElementById('scoreDisp').innerText=score;
+      document.getElementById('gameFeedback').innerHTML='<span style="color:#116c32;">Harika! Doğru bildin 🌟</span>';
+      setTimeout(()=>{ qCount++; nextQuestion(); },1400);
+    } else {
+      btn.classList.add('wrong');
+      Array.from(document.getElementById('gameOptions').children).forEach(b=>{
+        if (b.innerText===currentTarget.en) b.classList.add('correct');
+      });
+      document.getElementById('gameFeedback').innerHTML='<span style="color:#9b1c1c;">Yanlış! Doğrusu: <b>'+currentTarget.en+'</b></span>';
+      setTimeout(()=>{ qCount++; nextQuestion(); },2300);
+    }
+  }
+
+  /* =========================================================
+     ZIPLAMA OYUNU
+     ========================================================= */
+  const jumpCanvas = document.getElementById('jumpCanvas');
+  const jumpCtx = jumpCanvas.getContext('2d');
+  const jumpTrBanner = document.getElementById('jumpTrBanner');
+
+  let jumpScore=0, jumpCount=1;
+  let jumpTarget=null, jumpOptions=[];
+  let jumpBusy=false, jumpAnim=null;
+
+  let mX=0, mY=0;
+  let standingIndex=-1;
+  let platformVisible=true;
+
+  let layout=null;
+  let stageW=0, stageH=0, dpr=1;
+
+  function jumpPool() {
+    return words.slice();
+  }
+
+  function resizeJumpCanvas() {
+    const rect = jumpCanvas.parentElement.getBoundingClientRect();
+    stageW = Math.max(1, Math.round(rect.width));
+    stageH = Math.max(1, Math.round(rect.height));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    jumpCanvas.width = Math.round(stageW * dpr);
+    jumpCanvas.height = Math.round(stageH * dpr);
+    jumpCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /* Düzeltilmiş Yerleşim: Bloklar arası boşluklar açıldı, taşmalar önlendi */
+  function computeLayout() {
+    const w = stageW, h = stageH;
+    
+    const bottomArea = Math.min(118, Math.max(82, h * 0.20)); 
+    const playableH = h - bottomArea;
+    
+    // Blokları küçültüp ekrana tam sığdırıyoruz
+    const blockW = Math.min(w * 0.29, playableH * 0.34);
+    const blockH = Math.min(blockW * 1.05, playableH * 0.38); // Büyük ve okunaklı platform
+
+    // Yatayda tam ortalama
+    const topX = w / 2 - blockW / 2;
+    const topY = playableH * 0.10;
+
+    // Dikeyde yaprakların birbirine girmemesi için geniş boşluk
+    const gapY = Math.max(8, blockH * 0.22); 
+    const botY = topY + blockH + gapY;
+
+    // Alttaki iki blok arasındaki yatay boşluk
+    const gapX = blockW * 0.15;
+    const bot1X = w / 2 - blockW - gapX / 2;
+    const bot2X = w / 2 + gapX / 2;
+
+    // Platform (başlangıç yeri)
+    const platR = Math.max(18, w * 0.06);
+    const platX = Math.max(32, w * 0.12); // Canavarın başlangıç köşesi
+    const platY = topY + blockH * 0.2;
+
+    const blocks = [
+      { x: topX, y: topY, w: blockW, h: blockH, word: jumpOptions[0] },
+      { x: bot1X, y: botY, w: blockW, h: blockH, word: jumpOptions[1] },
+      { x: bot2X, y: botY, w: blockW, h: blockH, word: jumpOptions[2] }
+    ];
+
+    return { w, h, blocks, platX, platY, platR, blockW, blockH };
+  }
+
+  function blockStandY(b) { return b.y + b.h * 0.15; }
+  function platformStandY() { return layout.platY - 4; }
+
+  function startJumpGame() {
+    if (jumpAnim) cancelAnimationFrame(jumpAnim);
+    jumpScore=0; jumpCount=1; jumpBusy=false;
+    platformVisible=true;
+    standingIndex=-1;
+    document.getElementById('jumpScore').textContent=jumpScore;
+    document.getElementById('jumpLevel').textContent=1;
+    document.getElementById('jumpCount').textContent=jumpCount;
+    requestAnimationFrame(()=>{
+      resizeJumpCanvas();
+      beginRound(true);
+    });
+  }
+
+  function updateBanner() {
+    if (!jumpTarget) { jumpTrBanner.innerHTML = ''; return; }
+    jumpTrBanner.textContent = jumpTarget.tr;
+  }
+
+  function beginRound(autoplay) {
+    jumpBusy=false;
+    const pool = jumpPool();
+    if (!pool.length) return;
+
+    jumpTarget = pool[Math.floor(Math.random()*pool.length)];
+    const distractors = pool.filter(w=>w.en!==jumpTarget.en)
+      .sort(()=>Math.random()-.5).slice(0,2);
+    jumpOptions = [jumpTarget, ...distractors].sort(()=>Math.random()-.5);
+
+    updateBanner();
+    layout = computeLayout();
+
+    // Konum koruma
+    if (standingIndex >= 0 && layout.blocks[standingIndex]) {
+      const b = layout.blocks[standingIndex];
+      mX = b.x + b.w/2;
+      mY = blockStandY(b);
+    } else {
+      mX = layout.platX;
+      mY = platformStandY();
+      standingIndex = -1;
+    }
+
+    document.getElementById('jumpCount').textContent=jumpCount;
+    document.getElementById('jumpLevel').textContent=Math.floor((jumpCount-1)/5)+1;
+    document.getElementById('jumpFeedback').textContent = 'Türkçesini dinle, doğru İngilizce kelimeye dokun!';
+    drawJumpScene();
+    if (autoplay) setTimeout(replayJumpWord, 300);
+  }
+
+  function replayJumpWord() { if (jumpTarget) speakTurkish(jumpTarget.tr); }
+
+  // Yaprakları bloğun genişliğine tam oturtan fonksiyon
+  function drawTirtik(ctx, cx, y, w, color, strokeColor) {
+    const startX = cx - w / 2;
+    ctx.beginPath();
+    ctx.moveTo(startX - 4, y + 10);
+    ctx.lineTo(startX, y - 2);
+    
+    const teethCount = 5; // Tırtık sayısını azalttık ki sığsın
+    const step = w / teethCount;
+    for (let i = 0; i < teethCount; i++) {
+        let tx = startX + i * step;
+        ctx.lineTo(tx + step/2, y - 16); 
+        ctx.lineTo(tx + step, y - 2);    
+    }
+    
+    ctx.lineTo(startX + w, y - 2);
+    ctx.lineTo(startX + w + 4, y + 10);
+    ctx.lineTo(startX - 4, y + 10);
+    ctx.closePath();
+    
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+  }
+
+  function drawJumpScene() {
+    const ctx=jumpCtx;
+    const w=stageW, h=stageH;
+    if (w<=0||h<=0) return;
+    ctx.clearRect(0,0,w,h);
+
+    // Arka plan
+    const sky = ctx.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#4b9df4'); sky.addColorStop(0.62,'#b9e7ff'); sky.addColorStop(1,'#e8f8d5');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,w,h);
+    // Uzak tepeler ve yumuşak bulutlar
+    ctx.fillStyle='rgba(255,255,255,.62)';
+    [[w*.18,h*.13,23],[w*.72,h*.20,18],[w*.88,h*.09,13]].forEach(([cx,cy,r])=>{ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.arc(cx+r*.8,cy-r*.25,r*.78,0,Math.PI*2);ctx.arc(cx+r*1.55,cy,r*.9,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='#8bc9a0'; ctx.beginPath(); ctx.moveTo(0,h*.73); ctx.quadraticCurveTo(w*.2,h*.55,w*.42,h*.74); ctx.quadraticCurveTo(w*.7,h*.52,w,h*.72); ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.fill();
+
+    // Zemin tepeleri
+    ctx.fillStyle='#bce39f';
+    ctx.beginPath(); ctx.moveTo(0,h*0.82);
+    ctx.quadraticCurveTo(w*0.3,h*0.75,w*0.6,h*0.82);
+    ctx.quadraticCurveTo(w*0.8,h*0.88,w,h*0.80);
+    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.fill();
+
+    ctx.fillStyle='#a0d685';
+    ctx.beginPath(); ctx.moveTo(0,h*0.92);
+    ctx.quadraticCurveTo(w*0.4,h*0.85,w*0.7,h*0.92);
+    ctx.quadraticCurveTo(w*0.9,h*0.96,w,h*0.92);
+    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.fill();
+
+    if (!layout) return;
+
+    // Platform (Başlangıç saksısı)
+    if (platformVisible) {
+      ctx.save();
+      const px = layout.platX, py = layout.platY, pr = layout.platR;
+      
+      ctx.beginPath();
+      ctx.moveTo(px - pr*0.8, py);
+      ctx.lineTo(px - pr*0.6, py + pr*1.2);
+      ctx.quadraticCurveTo(px, py + pr*1.5, px + pr*0.6, py + pr*1.2);
+      ctx.lineTo(px + pr*0.8, py);
+      ctx.closePath();
+      ctx.fillStyle='#ffffff'; ctx.fill();
+      ctx.strokeStyle='#aeb5b9'; ctx.lineWidth=3; ctx.stroke();
+
+      drawTirtik(ctx, px, py, pr*1.6, '#cceba6', '#9ab882');
+      ctx.restore();
+    }
+
+    // Bloklar
+    layout.blocks.forEach(b=>{
+      ctx.save();
+      
+      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 8;
+
+      // Blok Gövdesi
+      const r = b.w * 0.35;
+      ctx.beginPath();
+      ctx.moveTo(b.x + r, b.y);
+      ctx.arcTo(b.x + b.w, b.y, b.x + b.w, b.y + b.h, r);
+      ctx.arcTo(b.x + b.w, b.y + b.h, b.x, b.y + b.h, r);
+      ctx.arcTo(b.x, b.y + b.h, b.x, b.y, r);
+      ctx.arcTo(b.x, b.y, b.x + b.w, b.y, r);
+      ctx.closePath();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      
+      ctx.shadowColor = 'transparent';
+      
+      ctx.strokeStyle = '#aeb5b9';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      drawTirtik(ctx, b.x + b.w/2, b.y, b.w, '#cceba6', '#9ab882');
+
+      // Yazı
+      ctx.fillStyle='#4a5056';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      
+      const maxTextWidth = b.w - 15;
+      let fontSize = Math.min(b.h * 0.34, 36);
+      ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
+      
+      while (ctx.measureText(b.word.en).width > maxTextWidth && fontSize > 10) {
+        fontSize -= 2;
+        ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
+      }
+      
+      const parts = b.word.en.split(' ');
+      if (parts.length > 1 && b.word.en.length > 9) {
+        const mid = Math.ceil(parts.length/2);
+        ctx.fillText(parts.slice(0,mid).join(' '), b.x+b.w/2, b.y+b.h*0.45);
+        ctx.fillText(parts.slice(mid).join(' '), b.x+b.w/2, b.y+b.h*0.66);
+      } else { ctx.fillText(b.word.en, b.x + b.w/2, b.y + b.h*0.55); }
+      ctx.restore();
+    });
+
+    // Canavar
+    drawMonster(ctx, mX, mY, jumpBusy);
+  }
+
+  function drawMonster(ctx,px,py,jumping) {
+    const sc = Math.max(0.72, Math.min(1.12, Math.min(stageW,stageH)/360));
+    ctx.save(); ctx.translate(px,py); ctx.scale(sc,sc);
+    if (!jumping) { ctx.translate(0,7); ctx.scale(1.12,0.78); }
+
+    ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.ellipse(0,45,18,6,0,0,Math.PI*2); ctx.fill();
+
+    ctx.fillStyle='#86c95d'; 
+    ctx.strokeStyle='#558c3e'; 
+    ctx.lineWidth=2.5;
+    
+    ctx.beginPath();
+    ctx.moveTo(-15,10); 
+    ctx.lineTo(-18,-15); ctx.lineTo(-10,-25); ctx.lineTo(-5,-18); ctx.lineTo(0,-30); ctx.lineTo(5,-18); ctx.lineTo(12,-25); ctx.lineTo(18,-15); ctx.lineTo(15,10); 
+    ctx.quadraticCurveTo(15, 25, 0, 25);
+    ctx.quadraticCurveTo(-15, 25, -15, 10);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(-6,-5,6,0,Math.PI*2); ctx.arc(6,-5,6,0,Math.PI*2); ctx.fill();
+    ctx.lineWidth=1.5; ctx.strokeStyle='#558c3e'; ctx.stroke();
+
+    ctx.fillStyle='#333';
+    ctx.beginPath(); ctx.arc(-5,-5,2.5,0,Math.PI*2); ctx.arc(7,-5,2.5,0,Math.PI*2); ctx.fill();
+
+    ctx.strokeStyle='#558c3e'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0, 2, 5, 0.1, Math.PI-0.1); ctx.stroke();
+
+    ctx.fillStyle='#f58965';
+    ctx.beginPath();
+    ctx.moveTo(-14, 10); ctx.lineTo(14, 10); ctx.lineTo(12, 22); ctx.lineTo(-12, 22);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle='#86c95d';
+    ctx.beginPath(); ctx.ellipse(-8, 28, 6, 4, 0, 0, Math.PI*2); ctx.ellipse(8, 28, 6, 4, 0, 0, Math.PI*2); ctx.fill();
+    
+    ctx.fillStyle='#cc5a5a';
+    ctx.beginPath(); ctx.ellipse(-8, 32, 7, 3, 0, 0, Math.PI*2); ctx.ellipse(8, 32, 7, 3, 0, 0, Math.PI*2); ctx.fill();
+
+    ctx.strokeStyle='#86c95d'; ctx.lineWidth=5; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-15, 5); ctx.lineTo(-20, 15); ctx.moveTo(15, 5); ctx.lineTo(20, 15); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function jumpTo(tx,ty,arcHeight,duration,onDone) {
+    const sx=mX, sy=mY;
+    const start=performance.now();
+    jumpBusy=true;
+    function frame(now) {
+      const t=Math.min(1,(now-start)/duration);
+      mX = sx + (tx-sx)*t;
+      mY = sy + (ty-sy)*t - Math.sin(t*Math.PI)*arcHeight;
+      drawJumpScene();
+      if (t<1) jumpAnim=requestAnimationFrame(frame);
+      else { mX=tx; mY=ty; drawJumpScene(); if (onDone) onDone(); }
+    }
+    jumpAnim=requestAnimationFrame(frame);
+  }
+
+  function animateFall(onDone) {
+    const sy=mY;
+    const targetY = stageH + 80;
+    const start=performance.now(), duration=600;
+    jumpBusy=true;
+    
+    // Düşme sesini başlat
+    playFallSound();
+
+    function frame(now) {
+      const t=Math.min(1,(now-start)/duration);
+      mY = sy + (targetY-sy)*t*t;
+      drawJumpScene();
+      if (t<1) jumpAnim=requestAnimationFrame(frame);
+      else if (onDone) onDone();
+    }
+    jumpAnim=requestAnimationFrame(frame);
+  }
+
+  function handleBlockClick(idx) {
+    if (jumpBusy || !jumpTarget) return;
+    const chosen = jumpOptions[idx];
+    if (!chosen) return;
+    const correct = chosen.en === jumpTarget.en;
+
+    const b = layout.blocks[idx];
+    const tx = b.x + b.w/2;
+    const ty = blockStandY(b);
+
+    if (platformVisible) {
+      platformVisible = false;
+      drawJumpScene();
+    }
+
+    speakWord(chosen.en);
+
+    if (correct) {
+      const arc = Math.min(stageW,stageH)*0.2;
+      const dist = Math.abs(tx-mX);
+      const duration = 450 + Math.min(300, dist*0.4);
+      jumpTo(tx,ty,arc,duration,()=>{
+        jumpBusy=false;
+        standingIndex=idx;
+        jumpScore+=10;
+        document.getElementById('jumpScore').textContent=jumpScore;
+        document.getElementById('jumpFeedback').innerHTML='🌟 Harika! Doğru blok!';
+        setTimeout(()=>{ jumpCount++; beginRound(true); },1000);
+      });
+    } else {
+      jumpTo(tx,ty,Math.min(stageW,stageH)*0.12,300,()=>{
+        animateFall(()=>{
+          document.getElementById('jumpFeedback').innerHTML =
+            'Düştün! Doğru cevap: <b>'+jumpTarget.en+'</b> — tekrar dene!';
+          standingIndex=-1;
+          platformVisible=true;
+          jumpBusy=false;
+          layout=computeLayout();
+          mX = layout.platX;
+          mY = platformStandY();
+          drawJumpScene();
+          setTimeout(()=>replayJumpWord(),500);
+        });
+      });
+    }
+  }
+
+  jumpCanvas.addEventListener('click',function(e){
+    if (jumpBusy || !jumpTarget || !layout) return;
+    const rect = jumpCanvas.getBoundingClientRect();
+    const x = (e.clientX-rect.left)*(stageW/rect.width);
+    const y = (e.clientY-rect.top)*(stageH/rect.height);
+    let hit=-1;
+    layout.blocks.forEach((b,i)=>{
+      if (x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h) hit=i;
+    });
+    if (hit===-1) return;
+    handleBlockClick(hit);
+  });
+
+  let resizeTimeout=null;
+  function handleResize() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(()=>{
+      if (document.getElementById('jumpPanel').classList.contains('active')) {
+        resizeJumpCanvas();
+        if (jumpTarget) {
+          layout = computeLayout();
+          if (standingIndex >= 0 && layout.blocks[standingIndex]) {
+            const b = layout.blocks[standingIndex];
+            mX = b.x+b.w/2; mY = blockStandY(b);
+          } else {
+            mX = layout.platX; mY = platformStandY();
+          }
+          drawJumpScene();
+        }
+      }
+    },80);
+  }
+  window.addEventListener('resize',handleResize);
+  window.addEventListener('orientationchange',handleResize);
+
+  const obs = new MutationObserver(()=>{
+    if (document.getElementById('jumpPanel').classList.contains('active')) {
+      requestAnimationFrame(()=>{
+        resizeJumpCanvas();
+        if (jumpTarget) {
+          layout = computeLayout();
+          if (standingIndex < 0) { mX = layout.platX; mY = platformStandY(); }
+          drawJumpScene();
+        }
+      });
+    }
+  });
+  obs.observe(document.getElementById('jumpPanel'),{attributes:true,attributeFilter:['class']});
+
+  if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = getBritishVoice;
+  renderLearnCard();
+</script>
+</body>
+</html>
